@@ -1,0 +1,13 @@
+{
+  "projectId": "piyush-mobile-care-4293d",
+  "appId": "1:890139075900:web:9f8533b93286ed04ac2a39",
+  "apiKey": "AIzaSyA0VwhLoyyE9-YJm16Bi017RQ7bprrCMBc",
+  "authDomain": "piyush-mobile-care-4293d.firebaseapp.com",
+  "databaseURL": "https://piyush-mobile-care-4293d-default-rtdb.firebaseio.com",
+  "storageBucket": "piyush-mobile-care-4293d.firebasestorage.app",
+  "messagingSenderId": "890139075900",
+  "measurementId": "G-R5YKVLWZK5",
+  "oAuthClientId": "",
+  "recaptchaSiteKey": "",
+  "firestoreDatabaseId": "(default)"
+}

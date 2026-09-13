@@ -1,0 +1,6 @@
+{
+  "name": "Piyush Sitapur Mobile Care",
+  "description": "Piyush Sitapur Mobile Care - Trusted doorstep mobile repair service in Sitapur, UP. Call or WhatsApp 8563975583 for free on-site inspection, genuine parts, and quick repairs.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

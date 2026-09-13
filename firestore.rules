@@ -1,0 +1,40 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && (
+        request.auth.uid == 'QptrqWDcngVbnXATvNovNQTYbBk2' || 
+        request.auth.token.email == 'yasisrivastava1@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    match /bookings/{bookingId} {
+      allow read, create, update: if true;
+      allow delete: if isAdmin();
+    }
+
+    match /technicians/{technicianId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /supportTickets/{ticketId} {
+      allow read: if request.auth != null && (resource.data.customerId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null && request.resource.data.customerId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "projectInfo": {
+    "name": "Sitapur Mobile Care",
+    "description": "Firebase backend for mobile repair booking and tracking system.",
+    "roles": ["admin", "customer"],
+    "authProviders": ["Google"]
+  },
+  "collections": [
+    {
+      "name": "users",
+      "description": "User profiles and role information",
+      "documentId": "uid",
+      "fields": [
+        { "name": "uid", "type": "string", "description": "Firebase Auth UID" },
+        { "name": "email", "type": "string", "description": "User email address" },
+        { "name": "displayName", "type": "string", "description": "User full name" },
+        { "name": "role", "type": "string", "description": "'admin' or 'customer'" },
+        { "name": "createdAt", "type": "timestamp" }
+      ],
+      "rules": [
+        { "action": "read", "allow": "request.auth.uid == resource.id || request.auth.token.email == 'QptrqWDcngVbnXATvNovNQTYbBk2'" },
+        { "action": "write", "allow": "request.auth.uid == request.resource.id || request.auth.token.email == 'QptrqWDcngVbnXATvNovNQTYbBk2'" }
+      ]
+    },
+    {
+      "name": "bookings",
+      "description": "Repair bookings",
+      "documentId": "auto",
+      "fields": [
+        { "name": "bookingId", "type": "string" },
+        { "name": "customerId", "type": "string" },
+        { "name": "customerName", "type": "string" },
+        { "name": "status", "type": "string" },
+        { "name": "createdAt", "type": "timestamp" },
+        { "name": "updatedAt", "type": "timestamp" }
+      ],
+      "rules": [
+        { "action": "read", "allow": "request.auth != null && (resource.data.customerId == request.auth.uid || request.auth.token.email == 'yasisrivastava1@gmail.com' || request.auth.token.email == 'QptrqWDcngVbnXATvNovNQTYbBk2' || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')" },
+        { "action": "create", "allow": "request.auth != null && request.resource.data.customerId == request.auth.uid" },
+        { "action": "update", "allow": "request.auth != null && (resource.data.customerId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.token.email == 'yasisrivastava1@gmail.com')" },
+        { "action": "delete", "allow": "get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.token.email == 'yasisrivastava1@gmail.com'" }
+      ]
+    },
+    {
+      "name": "technicians",
+      "description": "Technician profiles",
+      "documentId": "auto",
+      "fields": [
+        { "name": "name", "type": "string" },
+        { "name": "phone", "type": "string" },
+        { "name": "isActive", "type": "boolean" }
+      ],
+      "rules": [
+        { "action": "read", "allow": "true" },
+        { "action": "write", "allow": "get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.token.email == 'yasisrivastava1@gmail.com'" }
+      ]
+    },
+    {
+      "name": "supportTickets",
+      "description": "Support tickets",
+      "documentId": "auto",
+      "fields": [
+        { "name": "customerId", "type": "string" },
+        { "name": "status", "type": "string" }
+      ],
+      "rules": [
+        { "action": "read", "allow": "request.auth != null && (resource.data.customerId == request.auth.uid || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.token.email == 'yasisrivastava1@gmail.com')" },
+        { "action": "create", "allow": "request.auth != null" },
+        { "action": "update, delete", "allow": "get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' || request.auth.token.email == 'yasisrivastava1@gmail.com'" }
+      ]
+    }
+  ]
+}
