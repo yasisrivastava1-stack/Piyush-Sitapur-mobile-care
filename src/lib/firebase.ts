@@ -29,10 +29,10 @@ isSupported().then((supported) => {
 });
 
 // Initialize Firestore with specific database ID if available
-export const db: Firestore = getFirestore(
-  app,
-  firebaseConfig.firestoreDatabaseId || undefined
-);
+export const db: Firestore =
+  firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+    ? getFirestore(app, firebaseConfig.firestoreDatabaseId)
+    : getFirestore(app);
 
 // Initialize Firebase Auth
 export const auth = getAuth(app);
