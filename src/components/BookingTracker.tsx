@@ -44,7 +44,7 @@ const TIMELINE_STEPS: { key: BookingStatus; label: string; desc: string }[] = [
   { key: 'repair_started', label: 'Repair Started', desc: 'Repairing phone in front of customer' },
   { key: 'repair_completed', label: 'Repair Completed', desc: 'Post-repair diagnostic quality checks passed' },
   { key: 'payment_completed', label: 'Payment Completed', desc: 'Payment received & warranty activated' },
-  { key: 'booking_closed', label: 'Booking Closed', desc: 'Invoice issued with service warranty' },
+  { key: 'booking_closed', label: 'Booking Completed', desc: 'Invoice issued with service warranty' },
 ];
 
 export const BookingTracker: React.FC<BookingTrackerProps> = ({
@@ -489,7 +489,7 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
 
             <div className="mt-4 space-y-2.5">
               {[
-                { id: 'upi', label: 'UPI (Google Pay, PhonePe, Paytm)', icon: <QrCode className="w-5 h-5 text-indigo-600" /> },
+                { id: 'upi', label: 'UPI (Google Pay, Paytm, Axis Bank)', icon: <QrCode className="w-5 h-5 text-indigo-600" /> },
                 { id: 'cod', label: 'Cash on Delivery (Pay after repair)', icon: <CreditCard className="w-5 h-5 text-emerald-600" /> },
                 { id: 'razorpay', label: 'Online / Razorpay / Cards / NetBanking', icon: <Sparkles className="w-5 h-5 text-blue-600" /> },
                 { id: 'payment_link', label: 'SMS / WhatsApp Payment Link', icon: <Phone className="w-5 h-5 text-amber-500" /> },
@@ -519,8 +519,8 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
                 </span>
                 <div className="w-48 h-48 bg-white border border-slate-300 rounded-lg mx-auto flex items-center justify-center overflow-hidden shadow-sm">
                   <img 
-                    src="/phonepe-qr.jpeg" 
-                    alt="PhonePe QR Code" 
+                    src="/axis-qr.png" 
+                    alt="Axis Bank QR Code" 
                     className="w-full h-full object-contain"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Please+Upload+QR+Code\nTo+Public+Folder';

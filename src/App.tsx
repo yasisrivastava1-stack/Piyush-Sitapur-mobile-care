@@ -112,7 +112,7 @@ export default function App() {
   const handleOpenBooking = async (brand?: string, service?: string) => {
     if (!currentUser) {
       try {
-        const user = await loginAnonymously();
+        const user = await signInWithGoogle();
         if (!user) return; // User cancelled
       } catch (e) {
         console.error("Login failed", e);

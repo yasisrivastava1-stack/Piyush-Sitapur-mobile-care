@@ -144,17 +144,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Revenue calculation
   const totalRevenue = bookings.reduce(
-    (acc, b) => acc + (b.paymentStatus === 'paid' ? b.finalPrice || b.estimatedPrice : 0),
-    124800
+    (acc, b) => acc + (b.paymentStatus === 'paid' ? b.finalPrice || b.estimatedPrice || 0 : 0),
+    0
   );
   const totalCompleted = bookings.filter(
     (b) => b.status === 'repair_completed' || b.status === 'payment_completed' || b.status === 'booking_closed'
-  ).length + 142;
+  ).length;
 
   // Filtered bookings
   const filteredBookings = bookings.filter((b) => {
-    const matchesStatus =
-      bookingFilterStatus === 'all' ? true : b.status === bookingFilterStatus;
+    let matchesStatus = true;
+    if (bookingFilterStatus !== 'all') {
+      if (bookingFilterStatus === 'booking_received') {
+        matchesStatus = ['booking_received', 'technician_assigning'].includes(b.status);
+      } else if (bookingFilterStatus === 'booking_confirmed') {
+        matchesStatus = ['booking_confirmed', 'technician_assigned'].includes(b.status);
+      } else if (bookingFilterStatus === 'technician_on_the_way') {
+        matchesStatus = ['technician_on_the_way', 'technician_arrived', 'device_inspection', 'repair_started'].includes(b.status);
+      } else if (bookingFilterStatus === 'repair_completed') {
+        matchesStatus = ['repair_completed', 'payment_completed', 'booking_closed'].includes(b.status);
+      } else {
+        matchesStatus = b.status === bookingFilterStatus;
+      }
+    }
     
     const sq = searchQuery.toLowerCase();
     const matchesSearch =
@@ -311,7 +323,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </span>
               <div className="flex items-baseline justify-between mt-2">
                 <span className="text-2xl font-black text-slate-900">
-                  {bookings.length + 3840}
+                  {bookings.length}
                 </span>
                 <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
                   +18% MoM
@@ -562,7 +574,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 },
                 {
                   id: 'technician_on_the_way',
-                  label: `🛵 On The Way (${bookings.filter((b) => b.status === 'technician_on_the_way').length})`,
+                  label: `🛵 In Progress (${inProgressBookings.length})`,
                 },
                 {
                   id: 'repair_completed',
