@@ -334,6 +334,20 @@ export default function App() {
     }
   };
 
+  // Admin Adds New Technician
+  const handleAddTechnician = async (newTech: Omit<Technician, 'id'>) => {
+    const id = `tech_${Date.now()}`;
+    const created: Technician = {
+      ...newTech,
+      id,
+    };
+    try {
+      await setDoc(doc(db, 'technicians', id), created);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // Add Customer Review
   const handleAddReview = async (newReview: Omit<CustomerReview, 'id' | 'date'>) => {
     const id = `rev_${Date.now()}`;
@@ -569,6 +583,7 @@ export default function App() {
             onUpdateBookingStatus={handleUpdateBookingStatus}
             onUpdateEstimatedPrice={handleUpdateEstimatedPrice}
             onToggleTechnicianStatus={handleToggleTechnicianStatus}
+            onAddTechnician={handleAddTechnician}
             onConfirmBooking={handleConfirmBooking}
             onOpenNewBooking={() => handleOpenBooking()}
           />

@@ -83,6 +83,7 @@ interface AdminDashboardProps {
   onToggleTechnicianStatus: (techId: string) => void;
   onConfirmBooking?: (bookingId: string) => void;
   onOpenNewBooking?: () => void;
+  onAddTechnician?: (technician: Omit<Technician, 'id'>) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -95,6 +96,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onToggleTechnicianStatus,
   onConfirmBooking,
   onOpenNewBooking,
+  onAddTechnician,
 }) => {
   const [activeAdminTab, setActiveAdminTab] = useState<
     'overview' | 'bookings' | 'technicians' | 'services' | 'areas' | 'tickets'
@@ -108,6 +110,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showAddTechModal, setShowAddTechModal] = useState(false);
   const [newTechName, setNewTechName] = useState('');
   const [newTechPhone, setNewTechPhone] = useState('');
+  const [newTechExperience, setNewTechExperience] = useState('2 Years');
   const [newTechExp, setNewTechExp] = useState('4 Years');
 
   // Multi-city expansion toggle state
@@ -1267,10 +1270,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </button>
               <button
                 onClick={() => {
-                  if (newTechName.trim()) {
+                  if (newTechName.trim() && newTechPhone.trim()) {
+                    if (onAddTechnician) {
+                      onAddTechnician({
+                        name: newTechName.trim(),
+                        phone: newTechPhone.trim(),
+                        photo: 'https://i.pravatar.cc/150?u=' + Date.now(),
+                        experience: newTechExp,
+                        skills: ['Smartphone Repair', 'Screen Replacement'],
+                        serviceAreas: ['261001', '261002'],
+                        availableDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                        availableHours: '10:00 AM - 08:00 PM',
+                        isVerified: true,
+                        isActive: true,
+                        isAvailable: true,
+                        rating: 5.0,
+                        completedJobs: 0,
+                        todayEarnings: 0,
+                        monthlyEarnings: 0,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                      });
+                    }
                     setShowAddTechModal(false);
                     setNewTechName('');
                     setNewTechPhone('');
+                    setNewTechExp('4 Years');
                   }
                 }}
                 className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-xs cursor-pointer"
