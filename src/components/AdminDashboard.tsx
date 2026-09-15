@@ -187,7 +187,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <span className="bg-purple-500/20 text-purple-300 text-xs font-bold px-2.5 py-0.5 rounded border border-purple-500/30">
               Admin & Operations Console
             </span>
-            <span className="text-xs text-slate-400">Piyush Sitapur Mobile Care HQ</span>
+            <span className="text-xs text-slate-400">Piyush Sitapur Mobile & Laptop Care HQ</span>
           </div>
           <h1 className="text-2xl font-black text-white mt-1">
             Piyush Sitapur Central Management Portal

@@ -70,7 +70,7 @@ export const WhyChooseUs: React.FC = () => {
             Trust & Reliability
           </span>
           <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900">
-            Why Choose Piyush Sitapur Mobile Care?
+            Why Choose Piyush Sitapur Mobile & Laptop Care?
           </h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600">
             Your smartphone holds your sensitive data and personal memories. Here is why Sitapur residents trust us at their doorstep.

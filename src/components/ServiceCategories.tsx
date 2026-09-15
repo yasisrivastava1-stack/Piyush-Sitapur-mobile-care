@@ -49,7 +49,7 @@ export const ServiceCategories: React.FC<ServiceCategoriesProps> = ({ onSelectSe
             What Can We Fix for You Today?
           </h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600">
-            Certified smartphone repairs done right in front of your eyes at your home or office in Sitapur.
+            Certified smartphone and laptop repairs done right in front of your eyes at your home or office in Sitapur.
           </p>
         </div>
 

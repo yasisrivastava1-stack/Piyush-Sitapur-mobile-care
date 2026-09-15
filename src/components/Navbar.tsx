@@ -94,7 +94,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-bold tracking-tight text-blue-900 group-hover:text-blue-600 transition">
-                Piyush Sitapur Mobile Care
+                Piyush Sitapur Mobile & Laptop Care
               </span>
               <span className="hidden sm:inline-block px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-widest rounded-full">
                 Doorstep
@@ -102,7 +102,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
             <p className="text-[11px] text-slate-500 font-medium flex items-center gap-1 -mt-0.5">
               <MapPin className="w-3 h-3 text-red-500 shrink-0" />
-              <span>Mobile Repair at Your Doorstep in Sitapur</span>
+              <span>Mobile & Laptop Repair at Your Doorstep in Sitapur</span>
             </p>
           </div>
         </div>

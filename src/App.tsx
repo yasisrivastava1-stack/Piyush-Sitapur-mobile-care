@@ -707,7 +707,7 @@ export default function App() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 text-[11px]">
-          <p>© 2026 Piyush Sitapur Mobile Care. All rights reserved. “Mobile Repair at Your Doorstep”.</p>
+          <p>© 2026 Piyush Sitapur Mobile & Laptop Care. All rights reserved. “Mobile & Laptop Repair at Your Doorstep”.</p>
           <div className="flex items-center gap-4">
             <button onClick={() => setIsSupportModalOpen(true)} className="hover:text-slate-300">
               Terms & Warranty

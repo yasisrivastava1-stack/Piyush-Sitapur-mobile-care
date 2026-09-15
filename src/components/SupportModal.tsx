@@ -130,7 +130,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
             <div className="space-y-4 text-xs">
               <div className="bg-blue-50/80 p-4 rounded-2xl border border-blue-200 text-slate-800">
                 <span className="font-bold text-sm text-blue-900 block">
-                  Piyush Sitapur Mobile Care
+                  Piyush Sitapur Mobile & Laptop Care
                 </span>
                 <p className="mt-1 text-slate-600">
                   Police Line, Subhash Nagar, Sitapur, Uttar Pradesh - 261001
@@ -188,7 +188,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
                     Your request has been registered!
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Piyush Sitapur Mobile Care team will contact you within 15 minutes.
+                    Piyush Sitapur Mobile & Laptop Care team will contact you within 15 minutes.
                   </p>
                 </div>
               ) : (
@@ -197,7 +197,7 @@ export const SupportModal: React.FC<SupportModalProps> = ({
                     <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-900 flex items-center gap-2">
                       <Shield className="w-4 h-4 shrink-0 text-emerald-600" />
                       <span>
-                        All Piyush Sitapur Mobile Care repairs come with 3 to 6 months replacement warranty.
+                        All Piyush Sitapur Mobile & Laptop Care repairs come with 3 to 6 months replacement warranty.
                       </span>
                     </div>
                   )}

@@ -301,7 +301,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
       customerName: customerName || 'Sitapur Customer',
       customerPhone: customerPhone || '+91 85639 75583',
       alternatePhone,
-      brand: selectedBrand || 'Smartphone',
+      brand: selectedBrand || 'Device',
       model: selectedModel || 'Selected Model',
       problems: selectedProblems.length > 0 ? selectedProblems : ['General Inspection'],
       problemDescription,
@@ -348,13 +348,13 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 ? 'Booking Successfully Confirmed!'
                 : `Step ${currentStep} of 7: ${
                     currentStep === 1
-                      ? 'Select Mobile Brand'
+                      ? 'Select Device Brand'
                       : currentStep === 2
-                      ? 'Select Mobile Model'
+                      ? 'Select Device Model'
                       : currentStep === 3
-                      ? 'Select Phone Problem'
+                      ? 'Select Problem'
                       : currentStep === 4
-                      ? 'Upload Phone Photos'
+                      ? 'Upload Photos'
                       : currentStep === 5
                       ? 'Service Location in Sitapur'
                       : currentStep === 6
@@ -419,7 +419,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-slate-400 font-medium block">Smartphone</span>
+                    <span className="text-slate-400 font-medium block">Device</span>
                     <span className="font-bold text-slate-800">
                       {confirmedBooking.brand} {confirmedBooking.model}
                     </span>
@@ -470,7 +470,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500">
-                          Piyush Sitapur Mobile Care ({confirmedBooking.technicianRating} ★)
+                          Piyush Sitapur Mobile & Laptop Care ({confirmedBooking.technicianRating} ★)
                         </p>
                       </div>
                     </div>
@@ -522,42 +522,76 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
             </div>
           ) : (
             <>
-              {/* STEP 1: Select Mobile Brand */}
+              {/* STEP 1: Select Brand */}
               {currentStep === 1 && (
-                <div className="space-y-4 animate-in fade-in">
+                <div className="space-y-6 animate-in fade-in">
                   <div>
                     <h3 className="font-bold text-base text-slate-900">
-                      STEP 1 — Select Mobile Brand
+                      STEP 1 — Select Your Device Brand
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Select your smartphone manufacturer to view exact models and parts availability.
+                      Select your mobile or laptop manufacturer to view exact models and parts availability.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {SITAPUR_BRANDS.map((b) => (
-                      <button
-                        key={b.id}
-                        id={`wizard-brand-${b.id}`}
-                        onClick={() => {
-                          setSelectedBrand(b.name);
-                          setSelectedModel('');
-                          setCurrentStep(2);
-                        }}
-                        className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center group ${
-                          selectedBrand === b.name
-                            ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs'
-                            : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'
-                        }`}
-                      >
-                        <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">
-                          {b.logo}
-                        </span>
-                        <span className="text-xs font-bold text-slate-800 block truncate w-full">
-                          {b.name}
-                        </span>
-                      </button>
-                    ))}
+                  {/* Mobile Brands */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Mobiles</h4>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {SITAPUR_BRANDS.filter(b => b.deviceType === 'mobile').map((b) => (
+                        <button
+                          key={b.id}
+                          id={`wizard-brand-${b.id}`}
+                          onClick={() => {
+                            setSelectedBrand(b.name);
+                            setSelectedModel('');
+                            setCurrentStep(2);
+                          }}
+                          className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center group ${
+                            selectedBrand === b.name
+                              ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs'
+                              : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+                            {b.logo}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 block truncate w-full">
+                            {b.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Laptop Brands */}
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Laptops</h4>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {SITAPUR_BRANDS.filter(b => b.deviceType === 'laptop').map((b) => (
+                        <button
+                          key={b.id}
+                          id={`wizard-brand-${b.id}`}
+                          onClick={() => {
+                            setSelectedBrand(b.name);
+                            setSelectedModel('');
+                            setCurrentStep(2);
+                          }}
+                          className={`p-3 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center group ${
+                            selectedBrand === b.name
+                              ? 'border-blue-600 bg-blue-50/80 ring-2 ring-blue-500/20 shadow-xs'
+                              : 'border-slate-200 hover:border-blue-400 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+                            {b.logo}
+                          </span>
+                          <span className="text-xs font-bold text-slate-800 block truncate w-full">
+                            {b.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}
@@ -571,7 +605,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                         STEP 2 — Select {selectedBrand} Model
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Search or pick your exact smartphone model.
+                        Search or pick your exact {brandObj?.deviceType === 'laptop' ? 'laptop' : 'smartphone'} model.
                       </p>
                     </div>
                     <button
@@ -588,7 +622,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     <input
                       id="wizard-model-search-input"
                       type="text"
-                      placeholder={`Search ${selectedBrand} models (e.g. Galaxy S24, iPhone 15, Redmi Note 13...)`}
+                      placeholder={`Search ${selectedBrand} models ${brandObj?.deviceType === 'laptop' ? '(e.g. Inspiron, ThinkPad, Pavilion...)' : '(e.g. Galaxy S24, iPhone 15, Redmi Note 13...)'}`}
                       value={modelSearchQuery}
                       onChange={(e) => setModelSearchQuery(e.target.value)}
                       className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-hidden"
@@ -653,7 +687,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 <div className="space-y-4 animate-in fade-in">
                   <div>
                     <h3 className="font-bold text-base text-slate-900">
-                      STEP 3 — Select Phone Problem(s)
+                      STEP 3 — Select Problem(s)
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
                       You can select multiple issues. Our technician will carry parts for all selected issues.
@@ -661,7 +695,23 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                    {SERVICE_PROBLEMS.map((prob) => {
+                    {SERVICE_PROBLEMS.filter(prob => {
+                      const isLaptopProb = [
+                        'Laptop Not Turning On',
+                        'Laptop Screen Broken',
+                        'Keyboard Not Working',
+                        'Laptop Battery Not Charging',
+                        'Laptop Heating Issue',
+                        'Slow Performance / Hangs',
+                        'OS Not Booting / Blue Screen'
+                      ].includes(prob);
+                      
+                      if (brandObj?.deviceType === 'laptop') {
+                        return isLaptopProb || prob === 'Other';
+                      } else {
+                        return !isLaptopProb; // Keep mobile problems and 'Other'
+                      }
+                    }).map((prob) => {
                       const isSelected = selectedProblems.includes(prob);
                       return (
                         <button
@@ -695,7 +745,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                     </label>
                     <textarea
                       rows={2}
-                      placeholder="E.g. Phone fell in water yesterday, display shows green vertical lines, touch works partially..."
+                      placeholder={brandObj?.deviceType === 'laptop' ? "E.g. Laptop fell, screen is cracked and battery isn't holding charge..." : "E.g. Phone fell in water yesterday, display shows green vertical lines, touch works partially..."}
                       value={problemDescription}
                       onChange={(e) => setProblemDescription(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500"
@@ -704,15 +754,15 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                 </div>
               )}
 
-              {/* STEP 4: Upload Phone Photos */}
+              {/* STEP 4: Upload Device Photos */}
               {currentStep === 4 && (
                 <div className="space-y-4 animate-in fade-in">
                   <div>
                     <h3 className="font-bold text-base text-slate-900">
-                      STEP 4 — Upload Phone Photos
+                      STEP 4 — Upload {brandObj?.deviceType === 'laptop' ? 'Laptop' : 'Phone'} Photos
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Upload photos of the damaged phone to help our technician bring the exact matching OEM parts.
+                      Upload photos of the damaged {brandObj?.deviceType === 'laptop' ? 'laptop' : 'phone'} to help our technician bring the exact matching OEM parts.
                     </p>
                   </div>
 
@@ -759,7 +809,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({
                           >
                             <img
                               src={url}
-                              alt="Damaged phone"
+                              alt={`Damaged ${brandObj?.deviceType === 'laptop' ? 'laptop' : 'phone'}`}
                               className="w-full h-full object-cover"
                             />
                             <button

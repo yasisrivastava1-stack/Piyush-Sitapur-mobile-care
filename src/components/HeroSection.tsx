@@ -41,16 +41,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <div className="lg:col-span-7 flex flex-col justify-center gap-6 text-center lg:text-left">
             <div className="space-y-4">
               <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full shadow-2xs">
-                Piyush Sitapur Mobile Care • Doorstep Service
+                Piyush Sitapur Mobile & Laptop Care • Doorstep Service
               </span>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-slate-900 tracking-tight">
-                Mobile Repair <br />
+                Mobile & Laptop Repair <br />
                 <span className="text-blue-600">at Your Doorstep.</span>
               </h1>
 
               <p className="text-base sm:text-lg text-slate-600 max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Book Piyush Sitapur Mobile Care for trusted smartphone repair at your home or office anywhere in Sitapur. Free doorstep inspection, genuine parts, and quick service.
+                Book Piyush Sitapur Mobile & Laptop Care for trusted smartphone & laptop repair at your home or office anywhere in Sitapur. Free doorstep inspection, genuine parts, and quick service.
               </p>
             </div>
 
@@ -65,7 +65,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <input
                 id="hero-model-search"
                 type="text"
-                placeholder="E.g. iPhone 15, Galaxy S24, Redmi Note 13..."
+                placeholder="E.g. iPhone 15, HP Pavilion, Galaxy S24..."
                 value={searchModel}
                 onChange={(e) => setSearchModel(e.target.value)}
                 className="w-full text-xs sm:text-sm text-slate-800 placeholder-slate-400 bg-transparent focus:outline-hidden py-1"
@@ -112,7 +112,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 
               <a
                 id="hero-whatsapp-us-btn"
-                href="https://wa.me/918563975583?text=Hi%20Piyush%20Sitapur%20Mobile%20Care,%20I%20want%20to%20book%20a%20doorstep%20mobile%20repair"
+                href="https://wa.me/918563975583?text=Hi%20Piyush%20Sitapur%20Mobile%20Care,%20I%20want%20to%20book%20a%20doorstep%20repair"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold px-3.5 py-2 rounded-full border border-emerald-200/60 transition"

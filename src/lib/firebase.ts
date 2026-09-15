@@ -62,6 +62,11 @@ export async function signInWithGoogle() {
         'Login popup was blocked by your browser.\n\nSince this app is running in a preview window, the browser may block popups. Please click the "Open in new tab" icon at the top right of this preview, or manually allow popups for this site, and try logging in again.'
       );
     }
+    if (error.code === 'auth/network-request-failed') {
+      alert(
+        'Google Sign-In failed due to a network error.\n\nThis often happens when third-party cookies are blocked in this preview window. \n\nPlease click the "Open in new tab" icon at the top right of this preview window (the diagonal arrow icon) and try logging in again from the full screen window.'
+      );
+    }
     console.error('Google Sign-In Error:', error);
     throw error;
   }

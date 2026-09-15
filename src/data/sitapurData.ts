@@ -10,6 +10,7 @@ import {
 export const SITAPUR_BRANDS: BrandItem[] = [
   {
     id: 'apple',
+    deviceType: 'mobile',
     name: 'Apple',
     logo: '🍎',
     popularModels: [
@@ -29,6 +30,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'samsung',
+    deviceType: 'mobile',
     name: 'Samsung',
     logo: '📱',
     popularModels: [
@@ -48,6 +50,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'redmi',
+    deviceType: 'mobile',
     name: 'Redmi',
     logo: '🔴',
     popularModels: [
@@ -63,6 +66,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'xiaomi',
+    deviceType: 'mobile',
     name: 'Xiaomi',
     logo: '🟠',
     popularModels: [
@@ -76,6 +80,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'realme',
+    deviceType: 'mobile',
     name: 'Realme',
     logo: '🟡',
     popularModels: [
@@ -91,6 +96,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'oneplus',
+    deviceType: 'mobile',
     name: 'OnePlus',
     logo: '➕',
     popularModels: [
@@ -107,6 +113,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'vivo',
+    deviceType: 'mobile',
     name: 'Vivo',
     logo: '🔷',
     popularModels: [
@@ -122,6 +129,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'oppo',
+    deviceType: 'mobile',
     name: 'Oppo',
     logo: '🟢',
     popularModels: [
@@ -136,6 +144,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'motorola',
+    deviceType: 'mobile',
     name: 'Motorola',
     logo: 'Ⓜ️',
     popularModels: [
@@ -150,6 +159,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'poco',
+    deviceType: 'mobile',
     name: 'Poco',
     logo: '⚡',
     popularModels: [
@@ -163,6 +173,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'iqoo',
+    deviceType: 'mobile',
     name: 'iQOO',
     logo: '🚀',
     popularModels: [
@@ -176,6 +187,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'nokia',
+    deviceType: 'mobile',
     name: 'Nokia',
     logo: '📞',
     popularModels: [
@@ -189,6 +201,7 @@ export const SITAPUR_BRANDS: BrandItem[] = [
   },
   {
     id: 'other',
+    deviceType: 'mobile',
     name: 'Other Brand',
     logo: '🔧',
     popularModels: [
@@ -202,6 +215,49 @@ export const SITAPUR_BRANDS: BrandItem[] = [
       'Lava Agni 2 5G',
       'Other Smartphone Model',
     ],
+  },
+
+  {
+    id: 'hp',
+    deviceType: 'laptop',
+    name: 'HP',
+    logo: '💻',
+    popularModels: ['Pavilion', 'Envy', 'Spectre', 'Omen', 'ProBook', 'EliteBook', 'Other'],
+  },
+  {
+    id: 'dell',
+    deviceType: 'laptop',
+    name: 'Dell',
+    logo: '💻',
+    popularModels: ['Inspiron', 'XPS', 'Alienware', 'Latitude', 'Vostro', 'Other'],
+  },
+  {
+    id: 'lenovo',
+    deviceType: 'laptop',
+    name: 'Lenovo',
+    logo: '💻',
+    popularModels: ['IdeaPad', 'ThinkPad', 'Yoga', 'Legion', 'Other'],
+  },
+  {
+    id: 'asus',
+    deviceType: 'laptop',
+    name: 'Asus',
+    logo: '💻',
+    popularModels: ['VivoBook', 'ZenBook', 'ROG', 'TUF', 'Other'],
+  },
+  {
+    id: 'acer',
+    deviceType: 'laptop',
+    name: 'Acer',
+    logo: '💻',
+    popularModels: ['Aspire', 'Swift', 'Nitro', 'Predator', 'Other'],
+  },
+  {
+    id: 'apple_mac',
+    deviceType: 'laptop',
+    name: 'Apple MacBook',
+    logo: '🍏',
+    popularModels: ['MacBook Air M1', 'MacBook Air M2', 'MacBook Air M3', 'MacBook Pro 13', 'MacBook Pro 14', 'MacBook Pro 16', 'Other'],
   },
 ];
 
@@ -318,6 +374,61 @@ export const SITAPUR_REPAIR_SERVICES: RepairServiceItem[] = [
     warrantyPeriod: '3 Months Warranty',
     icon: 'Wrench',
   },
+
+  {
+    id: 'laptop_screen',
+    title: 'Laptop Screen Replacement',
+    shortDesc: 'Broken display, lines on screen, or blank screen fix',
+    startingPrice: 3499,
+    estimatedMinutes: 60,
+    warrantyPeriod: '6 Months Warranty',
+    icon: 'Monitor',
+  },
+  {
+    id: 'laptop_keyboard',
+    title: 'Keyboard Replacement',
+    shortDesc: 'Missing keys, non-working keys, or water damaged keyboard',
+    startingPrice: 1299,
+    estimatedMinutes: 45,
+    warrantyPeriod: '3 Months Warranty',
+    icon: 'Keyboard',
+  },
+  {
+    id: 'laptop_battery',
+    title: 'Laptop Battery Replacement',
+    shortDesc: 'Fast draining, swelling, or not holding charge',
+    startingPrice: 1999,
+    estimatedMinutes: 30,
+    warrantyPeriod: '6 Months Warranty',
+    icon: 'BatteryCharging',
+  },
+  {
+    id: 'laptop_motherboard',
+    title: 'Motherboard/Chip-Level Repair',
+    shortDesc: 'Dead laptop, short circuit, or turning on then off',
+    startingPrice: 2499,
+    estimatedMinutes: 120,
+    warrantyPeriod: '3 Months Warranty',
+    icon: 'Cpu',
+  },
+  {
+    id: 'laptop_upgrade',
+    title: 'RAM / SSD Upgrade',
+    shortDesc: 'Boost speed with SSD installation or RAM expansion',
+    startingPrice: 999,
+    estimatedMinutes: 30,
+    warrantyPeriod: '1-3 Years Warranty (on parts)',
+    icon: 'HardDrive',
+  },
+  {
+    id: 'laptop_os',
+    title: 'OS Installation & Software',
+    shortDesc: 'Windows installation, virus removal, driver fixes',
+    startingPrice: 499,
+    estimatedMinutes: 60,
+    warrantyPeriod: 'No Warranty',
+    icon: 'Monitor',
+  },
 ];
 
 export const SERVICE_PROBLEMS = [
@@ -336,23 +447,45 @@ export const SERVICE_PROBLEMS = [
   'Network Problem',
   'Back Glass Broken',
   'Other',
+
+  'Laptop Not Turning On',
+  'Laptop Screen Broken',
+  'Keyboard Not Working',
+  'Laptop Battery Not Charging',
+  'Laptop Heating Issue',
+  'Slow Performance / Hangs',
+  'OS Not Booting / Blue Screen',
 ];
 
 export const SERVICEABLE_AREAS: ServiceArea[] = [
-  { id: 'area_1', name: 'Civil Lines', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_2', name: 'Sitapur City / Chowk', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_3', name: 'Station Road', pincode: '261001', isServiceable: true, hubName: 'Railway Station Service Center', deliveryFee: 0 },
-  { id: 'area_4', name: 'Subhash Nagar', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_5', name: 'Awas Vikas Colony', pincode: '261001', isServiceable: true, hubName: 'North Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_6', name: 'Khairabad', pincode: '261111', isServiceable: true, hubName: 'Khairabad Doorstep Unit', deliveryFee: 49 },
-  { id: 'area_7', name: 'Lalbagh', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_8', name: 'Bus Stand Area / Galla Mandi', pincode: '261001', isServiceable: true, hubName: 'Bus Stand Desk', deliveryFee: 0 },
-  { id: 'area_9', name: 'Prem Nagar', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_10', name: 'Transport Nagar', pincode: '261001', isServiceable: true, hubName: 'North Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_11', name: 'Eye Hospital Road', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
-  { id: 'area_12', name: 'Maholi Road Sector', pincode: '261002', isServiceable: true, hubName: 'West Sitapur Hub', deliveryFee: 49 },
-  { id: 'area_13', name: 'Laharpur Road', pincode: '261111', isServiceable: true, hubName: 'East Sitapur Hub', deliveryFee: 49 },
-  { id: 'area_14', name: 'Hargaon (Nearby)', pincode: '261121', isServiceable: false, hubName: 'Outstation Zone', deliveryFee: 99 },
+  { id: 'area_1', deviceType: 'mobile',
+    name: 'Civil Lines', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_2', deviceType: 'mobile',
+    name: 'Sitapur City / Chowk', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_3', deviceType: 'mobile',
+    name: 'Station Road', pincode: '261001', isServiceable: true, hubName: 'Railway Station Service Center', deliveryFee: 0 },
+  { id: 'area_4', deviceType: 'mobile',
+    name: 'Subhash Nagar', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_5', deviceType: 'mobile',
+    name: 'Awas Vikas Colony', pincode: '261001', isServiceable: true, hubName: 'North Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_6', deviceType: 'mobile',
+    name: 'Khairabad', pincode: '261111', isServiceable: true, hubName: 'Khairabad Doorstep Unit', deliveryFee: 49 },
+  { id: 'area_7', deviceType: 'mobile',
+    name: 'Lalbagh', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_8', deviceType: 'mobile',
+    name: 'Bus Stand Area / Galla Mandi', pincode: '261001', isServiceable: true, hubName: 'Bus Stand Desk', deliveryFee: 0 },
+  { id: 'area_9', deviceType: 'mobile',
+    name: 'Prem Nagar', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_10', deviceType: 'mobile',
+    name: 'Transport Nagar', pincode: '261001', isServiceable: true, hubName: 'North Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_11', deviceType: 'mobile',
+    name: 'Eye Hospital Road', pincode: '261001', isServiceable: true, hubName: 'Central Sitapur Hub', deliveryFee: 0 },
+  { id: 'area_12', deviceType: 'mobile',
+    name: 'Maholi Road Sector', pincode: '261002', isServiceable: true, hubName: 'West Sitapur Hub', deliveryFee: 49 },
+  { id: 'area_13', deviceType: 'mobile',
+    name: 'Laharpur Road', pincode: '261111', isServiceable: true, hubName: 'East Sitapur Hub', deliveryFee: 49 },
+  { id: 'area_14', deviceType: 'mobile',
+    name: 'Hargaon (Nearby)', pincode: '261121', isServiceable: false, hubName: 'Outstation Zone', deliveryFee: 99 },
 ];
 
 export const VALID_PINCODES = ['261001', '261002', '261111'];
@@ -360,6 +493,7 @@ export const VALID_PINCODES = ['261001', '261002', '261111'];
 export const TECHNICIANS_DATA: Technician[] = [
   {
     id: 'tech_1',
+    deviceType: 'mobile',
     name: 'Piyush',
     phone: '+91 85639 75583',
     email: 'piyush@sitapurmobilecare.in',
@@ -540,7 +674,7 @@ export const SITAPUR_SEO_PAGES: SitapurSeoPage[] = [
       'Cash on Delivery & UPI accepted after testing',
     ],
     content:
-      'Piyush Sitapur Mobile Care brings certified mobile repair directly to your location anywhere in Sitapur, UP. No more leaving your phone with shady shops in the market for days. Whether you are located near Civil Lines, Station Road, Khairabad, or Awas Vikas, our doorstep mobile repair service brings professional equipment directly to your doorstep.',
+      'Piyush Sitapur Mobile & Laptop Care brings certified mobile repair directly to your location anywhere in Sitapur, UP. No more leaving your phone with shady shops in the market for days. Whether you are located near Civil Lines, Station Road, Khairabad, or Awas Vikas, our doorstep mobile repair service brings professional equipment directly to your doorstep.',
   },
   {
     slug: 'mobile-screen-repair-sitapur',
@@ -556,7 +690,7 @@ export const SITAPUR_SEO_PAGES: SitapurSeoPage[] = [
       'Full replacement guarantee',
     ],
     content:
-      'Cracked your phone screen in Sitapur? Piyush Sitapur Mobile Care uses genuine display assemblies with premium oleophobic coating and original touch response.',
+      'Cracked your phone screen in Sitapur? Piyush Sitapur Mobile & Laptop Care uses genuine display assemblies with premium oleophobic coating and original touch response.',
   },
   {
     slug: 'iphone-repair-sitapur',
@@ -650,14 +784,14 @@ export const SITAPUR_SEO_PAGES: SitapurSeoPage[] = [
       'Expert technicians with multi-brand inventory',
     ],
     content:
-      'Khairabad residents no longer need to take an auto into Sitapur city to get their smartphones fixed. Piyush Sitapur Mobile Care covers Khairabad daily with complete warranty support.',
+      'Khairabad residents no longer need to take an auto into Sitapur city to get their smartphones fixed. Piyush Sitapur Mobile & Laptop Care covers Khairabad daily with complete warranty support.',
   },
 ];
 
 export const SITAPUR_FAQS = [
   {
     q: 'How does doorstep mobile repair in Sitapur work?',
-    a: 'You select your mobile brand, model, and the issue online or via WhatsApp (+91 85639 75583). Choose your address in Sitapur and preferred time slot. Piyush Sitapur Mobile Care visits your doorstep with all required tools and genuine parts, inspects your device for free, and provides an honest upfront estimate before starting the repair.',
+    a: 'You select your mobile brand, model, and the issue online or via WhatsApp (+91 85639 75583). Choose your address in Sitapur and preferred time slot. Piyush Sitapur Mobile & Laptop Care visits your doorstep with all required tools and genuine parts, inspects your device for free, and provides an honest upfront estimate before starting the repair.',
   },
   {
     q: 'Is my personal data (photos, messages, UPI) safe during repair?',

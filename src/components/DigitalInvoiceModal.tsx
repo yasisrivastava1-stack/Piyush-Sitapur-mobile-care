@@ -75,7 +75,7 @@ export const DigitalInvoiceModal: React.FC<DigitalInvoiceModalProps> = ({
                     PIYUSH SITAPUR MOBILE CARE
                   </h1>
                   <p className="text-[11px] text-slate-500 font-medium">
-                    “Mobile Repair at Your Doorstep”
+                    “Mobile & Laptop Repair at Your Doorstep”
                   </p>
                 </div>
               </div>
@@ -116,7 +116,7 @@ export const DigitalInvoiceModal: React.FC<DigitalInvoiceModalProps> = ({
                 {booking.technicianName || 'Piyush'}
               </p>
               <p className="text-slate-600 mt-0.5">Technician ID: {booking.technicianId || 'TECH-STP-01'}</p>
-              <p className="text-slate-600 mt-0.5">Piyush Sitapur Mobile Care</p>
+              <p className="text-slate-600 mt-0.5">Piyush Sitapur Mobile & Laptop Care</p>
             </div>
           </div>
 
@@ -231,13 +231,13 @@ export const DigitalInvoiceModal: React.FC<DigitalInvoiceModalProps> = ({
               <ShieldCheck className="w-6 h-6" />
               <div className="text-[11px] font-semibold">
                 <span>100% Genuine Certified Repair</span>
-                <p className="text-slate-400 text-[10px]">Verified Piyush Sitapur Mobile Care Seal</p>
+                <p className="text-slate-400 text-[10px]">Verified Piyush Sitapur Mobile & Laptop Care Seal</p>
               </div>
             </div>
 
             <div className="text-right">
               <div className="font-script text-slate-600 italic font-bold text-sm">
-                Piyush Sitapur Mobile Care
+                Piyush Sitapur Mobile & Laptop Care
               </div>
               <span className="text-[10px] text-slate-400 block mt-0.5">
                 Authorized Signatory & Lead Specialist

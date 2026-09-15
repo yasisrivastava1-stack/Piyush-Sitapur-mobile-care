@@ -105,7 +105,20 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
             </button>
           )}
 
-          {booking.paymentStatus !== 'paid' && (
+          {booking.status !== 'cancelled' && (booking.status === 'booking_received' || booking.status === 'booking_confirmed') && onUpdateStatus && (
+            <button
+              onClick={() => {
+                if (window.confirm('Are you sure you want to cancel this booking?')) {
+                  onUpdateStatus('cancelled');
+                }
+              }}
+              className="bg-red-500/20 hover:bg-red-500/40 text-white text-xs font-semibold px-4 py-2.5 rounded-xl border border-red-400/30 transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Cancel Booking</span>
+            </button>
+          )}
+
+          {booking.paymentStatus !== 'paid' && booking.status !== 'cancelled' && (
             <button
               id="tracker-pay-now-btn"
               onClick={() => setShowPaymentModal(true)}
@@ -121,17 +134,34 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Timeline & Quotation */}
         <div className="lg:col-span-7 space-y-6">
-          {/* 10-Step Timeline Card */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                <span>Doorstep Service Timeline</span>
-              </h2>
-              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
-                Step {activeStepIdx + 1} of 10
-              </span>
+          {booking.status === 'cancelled' && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm mb-6">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-bold text-red-800">Booking Cancelled</h3>
+                  <div className="mt-1 text-xs text-red-700">
+                    <p>This booking has been cancelled and will not be processed further.</p>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
+
+          {/* 10-Step Timeline Card */}
+          {booking.status !== 'cancelled' && (
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-xs">
+              <div className="flex items-center justify-between mb-5">
+                <h2 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-blue-600" />
+                  <span>Doorstep Service Timeline</span>
+                </h2>
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+                  Step {activeStepIdx + 1} of 10
+                </span>
+              </div>
 
             <div className="space-y-4 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
               {TIMELINE_STEPS.map((step, idx) => {
@@ -185,6 +215,7 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
               })}
             </div>
           </div>
+          )}
 
           {/* SERVICE DETAILS & ESTIMATE CARD */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs">
@@ -484,7 +515,7 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
             </div>
 
             <p className="text-xs text-slate-500 mt-2">
-              Sitapur Mobile Care accepts UPI, Cash on Delivery, and online Razorpay payments.
+              Sitapur Mobile & Laptop Care accepts UPI, Cash on Delivery, and online Razorpay payments.
             </p>
 
             <div className="mt-4 space-y-2.5">
@@ -515,7 +546,7 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
             {selectedPayMode === 'upi' && (
               <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-200 text-center">
                 <span className="text-[11px] text-slate-500 block mb-3">
-                  Scan Sitapur Mobile Care QR Code:
+                  Scan Sitapur Mobile & Laptop Care QR Code:
                 </span>
                 <div className="w-48 h-48 bg-white border border-slate-300 rounded-lg mx-auto flex items-center justify-center overflow-hidden shadow-sm">
                   <img 

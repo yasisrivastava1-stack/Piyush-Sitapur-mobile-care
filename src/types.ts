@@ -1,5 +1,5 @@
 /**
- * Core Data Models & Types for Sitapur Mobile Care
+ * Core Data Models & Types for Sitapur Mobile & Laptop Care
  */
 
 export type UserRole = 'customer' | 'admin';
@@ -120,6 +120,7 @@ export interface RepairServiceItem {
 
 export interface BrandItem {
   id: string;
+  deviceType: 'mobile' | 'laptop';
   name: string;
   logo: string;
   popularModels: string[];
