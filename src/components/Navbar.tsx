@@ -151,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 : 'hover:text-blue-600'
             }`}
           >
-            Live Tracking
+            {currentUser ? 'Customer Dashboard' : 'Track Order'}
           </button>
           <button
             id="nav-support"
@@ -279,7 +279,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       className="w-full text-left px-3 py-2.5 flex items-center gap-2 hover:bg-slate-50 text-slate-700 cursor-pointer"
                     >
                       <User className="w-4 h-4" />
-                      <span>My Profile & Bookings</span>
+                      <span>Customer Dashboard & Bookings</span>
                     </button>
 
                     <button

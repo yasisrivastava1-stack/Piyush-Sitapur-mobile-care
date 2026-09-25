@@ -74,12 +74,15 @@ export interface Booking {
   quotationStatus?: QuotationStatus;
   createdAt: string;
   updatedAt: string;
+  cancelReason?: string;
+  cancelledAt?: string;
 }
 
 export type ServiceableArea = ServiceArea;
 
 export interface Technician {
   id: string;
+  deviceType?: 'mobile' | 'laptop' | string;
   name: string;
   phone: string;
   email?: string;
@@ -100,6 +103,7 @@ export interface Technician {
 
 export interface ServiceArea {
   id: string;
+  deviceType?: 'mobile' | 'laptop' | string;
   name: string;
   pincode: string;
   isServiceable: boolean;

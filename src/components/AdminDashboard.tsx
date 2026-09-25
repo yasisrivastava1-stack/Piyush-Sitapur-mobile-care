@@ -106,6 +106,83 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedBookingForModal, setSelectedBookingForModal] = useState<Booking | null>(null);
 
+  // Live Technician Assignment Notification Banner state
+  const [assignmentNotice, setAssignmentNotice] = useState<{
+    bookingId: string;
+    techName: string;
+    techPhone: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (assignmentNotice) {
+      const timer = setTimeout(() => {
+        setAssignmentNotice(null);
+      }, 7000);
+      return () => clearTimeout(timer);
+    }
+  }, [assignmentNotice]);
+
+  // Helper to extract assigned technician information
+  const getAssignedTechnician = (booking: Booking) => {
+    const techById = booking.technicianId
+      ? technicians.find((t) => t.id === booking.technicianId)
+      : undefined;
+    const techByName = booking.technicianName
+      ? technicians.find((t) => t.name.toLowerCase() === booking.technicianName?.toLowerCase())
+      : undefined;
+    const matchedTech = techById || techByName;
+
+    const name = booking.technicianName || matchedTech?.name;
+    const phone = booking.technicianPhone || matchedTech?.phone;
+    const photo = booking.technicianPhoto || matchedTech?.photo;
+    const rating = booking.technicianRating || matchedTech?.rating || 4.9;
+
+    const isAssigned = Boolean(
+      booking.technicianName ||
+      booking.technicianPhone ||
+      booking.technicianId ||
+      ['booking_confirmed', 'technician_assigned', 'technician_on_the_way', 'technician_arrived', 'device_inspection', 'repair_started', 'repair_completed', 'payment_completed', 'booking_closed'].includes(booking.status)
+    );
+
+    return {
+      isAssigned,
+      name: name || (isAssigned ? (matchedTech?.name || 'Piyush') : null),
+      phone: phone || (isAssigned ? (matchedTech?.phone || '+91 85639 75583') : null),
+      photo: photo || matchedTech?.photo,
+      rating,
+      tech: matchedTech,
+    };
+  };
+
+  // Immediate assignment handler with feedback banner
+  const handleAssignWithFeedback = (bookingId: string, technicianId: string) => {
+    const tech = technicians.find((t) => t.id === technicianId) || technicians[0];
+    onAssignTechnician(bookingId, technicianId);
+    if (tech) {
+      const b = bookings.find((x) => x.id === bookingId);
+      setAssignmentNotice({
+        bookingId: b?.bookingId || bookingId,
+        techName: tech.name,
+        techPhone: tech.phone,
+      });
+      if (selectedBookingForModal && selectedBookingForModal.id === bookingId) {
+        setSelectedBookingForModal((prev) =>
+          prev
+            ? {
+                ...prev,
+                technicianId: tech.id,
+                technicianName: tech.name,
+                technicianPhone: tech.phone,
+                technicianRating: tech.rating,
+                technicianPhoto: tech.photo,
+                status: 'technician_assigned',
+              }
+            : null
+        );
+      }
+    }
+  };
+
   // New Technician Modal state
   const [showAddTechModal, setShowAddTechModal] = useState(false);
   const [newTechName, setNewTechName] = useState('');
@@ -134,11 +211,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Confirmation Handler
   const handleConfirmSingleBooking = (bookingId: string) => {
+    const defaultTech = technicians[0] || { name: 'Piyush', phone: '+91 85639 75583' };
+    const b = bookings.find((x) => x.id === bookingId);
+    setAssignmentNotice({
+      bookingId: b?.bookingId || bookingId,
+      techName: defaultTech.name,
+      techPhone: defaultTech.phone,
+    });
     if (onConfirmBooking) {
       onConfirmBooking(bookingId);
     } else {
       onUpdateBookingStatus(bookingId, 'booking_confirmed');
-      onAssignTechnician(bookingId, 'tech_1');
+      onAssignTechnician(bookingId, defaultTech.id || 'tech_1');
     }
   };
 
@@ -224,6 +308,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Live Technician Assignment Toast / Banner */}
+      {assignmentNotice && (
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white p-4 sm:p-5 rounded-3xl shadow-xl border border-emerald-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-3">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-white/20 flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="bg-white/20 text-white text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full">
+                  Technician Assigned
+                </span>
+                <span className="font-mono text-xs font-bold text-emerald-100">
+                  Booking #{assignmentNotice.bookingId}
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                <span className="text-base font-black text-white">
+                  {assignmentNotice.techName}
+                </span>
+                <span className="text-emerald-200 text-xs">•</span>
+                <span className="text-xs text-emerald-100 font-medium">Assigned Mobile:</span>
+                <a
+                  href={`tel:${assignmentNotice.techPhone}`}
+                  className="inline-flex items-center gap-1 font-mono font-black text-sm text-yellow-300 hover:underline"
+                  title="Click to call assigned technician"
+                >
+                  <Phone className="w-3.5 h-3.5 text-yellow-300 inline" />
+                  <span>{assignmentNotice.techPhone}</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            <a
+              href={`tel:${assignmentNotice.techPhone}`}
+              className="bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-black px-4 py-2.5 rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Phone className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Call Tech</span>
+            </a>
+            <a
+              href={`https://wa.me/91${assignmentNotice.techPhone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
+                assignmentNotice.techName
+              )},%20you%20have%20been%20assigned%20to%20doorstep%20repair%20booking%20${assignmentNotice.bookingId}%20in%20Sitapur.`}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl shadow-xs transition flex items-center gap-1.5"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>WhatsApp</span>
+            </a>
+            <button
+              onClick={() => setAssignmentNotice(null)}
+              className="text-white/80 hover:text-white p-1.5 rounded-lg transition cursor-pointer"
+              title="Close notification"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Unconfirmed Bookings Alert Banner */}
       {unconfirmedBookings.length > 0 && (
@@ -430,7 +578,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <th className="pb-3">Customer</th>
                     <th className="pb-3">Device & Issue</th>
                     <th className="pb-3">Sitapur Area</th>
-                    <th className="pb-3">Technician</th>
+                    <th className="pb-3 min-w-[160px]">Assigned Technician & Mobile</th>
                     <th className="pb-3">Status</th>
                     <th className="pb-3 text-right">Quick Action</th>
                   </tr>
@@ -465,8 +613,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <span>{b.area}</span>
                         <span className="text-[10px] text-slate-400 block">{b.appointmentDate}</span>
                       </td>
-                      <td className="py-3 text-slate-800 font-medium">
-                        {b.technicianName || 'Piyush (Hub)'}
+                      <td className="py-3">
+                        {(() => {
+                          const assigned = getAssignedTechnician(b);
+                          if (assigned.isAssigned && assigned.name) {
+                            return (
+                              <div className="space-y-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-extrabold text-slate-900 text-xs">{assigned.name}</span>
+                                  <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full">
+                                    Assigned
+                                  </span>
+                                </div>
+                                {assigned.phone && (
+                                  <a
+                                    href={`tel:${assigned.phone}`}
+                                    className="text-[11px] text-blue-700 hover:text-blue-900 font-mono font-bold flex items-center gap-1 hover:underline"
+                                    title="Call assigned technician"
+                                  >
+                                    <Phone className="w-2.5 h-2.5 text-emerald-600 inline" />
+                                    <span>{assigned.phone}</span>
+                                  </a>
+                                )}
+                              </div>
+                            );
+                          }
+                          return (
+                            <span className="text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded text-[10px] font-bold inline-block">
+                              Unassigned
+                            </span>
+                          );
+                        })()}
                       </td>
                       <td className="py-3">
                         {b.status === 'booking_received' ? (
@@ -614,7 +791,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <th className="pb-3">Customer & Phone</th>
                   <th className="pb-3">Device / Issue</th>
                   <th className="pb-3">Sitapur Area & Slot</th>
-                  <th className="pb-3">Technician</th>
+                  <th className="pb-3 min-w-[210px]">Assigned Technician & Mobile</th>
                   <th className="pb-3">Estimated Cost (₹)</th>
                   <th className="pb-3">Status & Confirmation</th>
                   <th className="pb-3 text-right">Actions</th>
@@ -670,18 +847,120 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         {b.appointmentDate} • {b.appointmentSlot}
                       </span>
                     </td>
-                    <td className="py-3.5">
-                      <select
-                        value={b.technicianId || 'tech_1'}
-                        onChange={(e) => onAssignTechnician(b.id, e.target.value)}
-                        className="p-1.5 rounded-lg border border-slate-300 text-xs bg-white font-medium max-w-[140px]"
-                      >
-                        {technicians.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.name} ({t.rating}★)
-                          </option>
-                        ))}
-                      </select>
+                    <td className="py-3.5 min-w-[210px]">
+                      {(() => {
+                        const assigned = getAssignedTechnician(b);
+                        if (assigned.isAssigned && assigned.name) {
+                          return (
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between gap-1.5">
+                                <div className="flex items-center gap-2">
+                                  {assigned.photo ? (
+                                    <img
+                                      src={assigned.photo}
+                                      alt={assigned.name}
+                                      className="w-8 h-8 rounded-full object-cover border border-emerald-300 ring-2 ring-emerald-500/20"
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-xs">
+                                      {assigned.name[0]}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="flex items-center gap-1">
+                                      <span className="font-extrabold text-slate-900 text-xs leading-none">
+                                        {assigned.name}
+                                      </span>
+                                      <span className="text-[10px] text-amber-500 font-bold">
+                                        ★{assigned.rating}
+                                      </span>
+                                    </div>
+                                    {assigned.phone && (
+                                      <div className="flex items-center gap-1 mt-0.5">
+                                        <Phone className="w-3 h-3 text-emerald-600 shrink-0" />
+                                        <a
+                                          href={`tel:${assigned.phone}`}
+                                          className="text-[11px] text-blue-700 hover:text-blue-900 font-mono font-bold hover:underline"
+                                          title="Click to call assigned technician"
+                                        >
+                                          {assigned.phone}
+                                        </a>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Quick Call & WhatsApp Buttons for Assigned Technician */}
+                                {assigned.phone && (
+                                  <div className="flex items-center gap-1 shrink-0">
+                                    <a
+                                      href={`tel:${assigned.phone}`}
+                                      className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
+                                      title={`Call ${assigned.name} (${assigned.phone})`}
+                                    >
+                                      <Phone className="w-3 h-3" />
+                                    </a>
+                                    <a
+                                      href={`https://wa.me/91${assigned.phone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
+                                        assigned.name
+                                      )},%20regarding%20assigned%20booking%20${b.bookingId}%20at%20${encodeURIComponent(b.area)}:`}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="p-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition"
+                                      title={`WhatsApp ${assigned.name}`}
+                                    >
+                                      <MessageSquare className="w-3 h-3" />
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Reassign Selector */}
+                              <div className="flex items-center gap-1">
+                                <span className="text-[10px] text-slate-400 font-medium">Reassign:</span>
+                                <select
+                                  value={b.technicianId || assigned.tech?.id || 'tech_1'}
+                                  onChange={(e) => handleAssignWithFeedback(b.id, e.target.value)}
+                                  className="p-1 rounded-md border border-slate-200 text-[10px] bg-slate-50 font-medium text-slate-700 hover:border-blue-400 focus:bg-white transition flex-1"
+                                  title="Change assigned technician"
+                                >
+                                  {technicians.map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                      {t.name} ({t.phone})
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Unassigned state:
+                        return (
+                          <div className="space-y-1.5">
+                            <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 border border-amber-300 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase">
+                              <AlertTriangle className="w-3 h-3 text-amber-600" />
+                              <span>Needs Tech Assignment</span>
+                            </span>
+                            <select
+                              value=""
+                              onChange={(e) => {
+                                if (e.target.value) handleAssignWithFeedback(b.id, e.target.value);
+                              }}
+                              className="p-1.5 rounded-lg border border-amber-300 text-xs bg-amber-50/70 font-semibold text-slate-800 w-full hover:border-amber-400 cursor-pointer"
+                            >
+                              <option value="" disabled>
+                                + Assign Technician...
+                              </option>
+                              {technicians.map((t) => (
+                                <option key={t.id} value={t.id}>
+                                  Assign {t.name} ({t.phone})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })()}
                     </td>
                     <td className="py-3.5">
                       <AdminRateInput booking={b} onUpdate={onUpdateEstimatedPrice} />
@@ -828,6 +1107,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <span>Experience:</span>
                       <span className="font-bold text-slate-800">{t.experience}</span>
                     </div>
+                    {(() => {
+                      const activeAssigned = bookings.filter(
+                        (b) =>
+                          (b.technicianId === t.id || b.technicianName === t.name) &&
+                          !['repair_completed', 'payment_completed', 'booking_closed', 'cancelled'].includes(b.status)
+                      );
+                      return (
+                        <div className="flex justify-between text-slate-500">
+                          <span>Active Assigned Jobs:</span>
+                          <span className={`font-extrabold ${activeAssigned.length > 0 ? 'text-emerald-700' : 'text-slate-500'}`}>
+                            {activeAssigned.length} Booking{activeAssigned.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      );
+                    })()}
                     <div className="flex justify-between text-slate-500">
                       <span>Today's Payout:</span>
                       <span className="font-bold text-emerald-700">₹{t.todayEarnings}</span>
@@ -1145,7 +1439,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
               </div>
 
-              {/* Appointment Slot & Technician Assigned */}
+              {/* Appointment Slot Details */}
               <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <span className="text-slate-400 block text-[11px]">Appointment Date</span>
@@ -1156,16 +1450,130 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <span className="font-bold text-slate-900">{selectedBookingForModal.appointmentSlot}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Assigned Technician</span>
-                  <span className="font-bold text-blue-700">{selectedBookingForModal.technicianName || 'Piyush (Lead)'}</span>
-                </div>
-                <div>
                   <span className="text-slate-400 block text-[11px]">Current Status</span>
                   <span className="font-bold text-slate-900 capitalize">
                     {selectedBookingForModal.status.replace(/_/g, ' ')}
                   </span>
                 </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Sitapur Service Area</span>
+                  <span className="font-bold text-slate-900">{selectedBookingForModal.area}</span>
+                </div>
               </div>
+
+              {/* Dedicated Assigned Technician Card */}
+              {(() => {
+                const assigned = getAssignedTechnician(selectedBookingForModal);
+                return (
+                  <div className="p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-emerald-950">
+                          Assigned Doorstep Technician
+                        </h4>
+                      </div>
+                      <span className="bg-emerald-200/80 text-emerald-900 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                        Verified Sitapur Tech
+                      </span>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3.5 rounded-xl border border-emerald-100 shadow-xs">
+                      <div className="flex items-center gap-3">
+                        {assigned.photo ? (
+                          <img
+                            src={assigned.photo}
+                            alt={assigned.name || 'Technician'}
+                            className="w-12 h-12 rounded-xl object-cover border border-emerald-200 shadow-xs"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 font-black flex items-center justify-center text-lg">
+                            {(assigned.name || 'P')[0]}
+                          </div>
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-black text-sm text-slate-900">
+                              {assigned.name || 'Piyush'}
+                            </span>
+                            <span className="text-xs text-amber-500 font-bold">
+                              ★{assigned.rating}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[11px] text-slate-500 font-medium">Mobile:</span>
+                            <a
+                              href={`tel:${assigned.phone || '+918563975583'}`}
+                              className="font-mono font-bold text-xs text-blue-700 hover:text-blue-900 hover:underline flex items-center gap-1"
+                            >
+                              <Phone className="w-3 h-3 text-emerald-600 inline" />
+                              <span>{assigned.phone || '+91 85639 75583'}</span>
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Communication Actions for Technician */}
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={`tel:${assigned.phone || '+918563975583'}`}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition"
+                          title="Call Technician"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call Tech</span>
+                        </a>
+                        <a
+                          href={`https://wa.me/91${(assigned.phone || '8563975583').replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
+                            assigned.name || 'Technician'
+                          )},%20Sitapur%20Booking%20update%20for%20${selectedBookingForModal.bookingId}:`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold text-xs px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition"
+                          title="WhatsApp Technician"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Change / Reassign Technician within Modal */}
+                    <div className="flex items-center gap-2 pt-1 text-xs">
+                      <span className="text-slate-600 font-semibold shrink-0">Change Technician:</span>
+                      <select
+                        value={selectedBookingForModal.technicianId || assigned.tech?.id || 'tech_1'}
+                        onChange={(e) => {
+                          const newTechId = e.target.value;
+                          handleAssignWithFeedback(selectedBookingForModal.id, newTechId);
+                          const newTech = technicians.find((t) => t.id === newTechId);
+                          if (newTech) {
+                            setSelectedBookingForModal((prev) =>
+                              prev
+                                ? {
+                                    ...prev,
+                                    technicianId: newTech.id,
+                                    technicianName: newTech.name,
+                                    technicianPhone: newTech.phone,
+                                    technicianRating: newTech.rating,
+                                    technicianPhoto: newTech.photo,
+                                  }
+                                : null
+                            );
+                          }
+                        }}
+                        className="p-1.5 rounded-xl border border-emerald-300 text-xs bg-white font-medium text-slate-800 w-full"
+                      >
+                        {technicians.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.name} — Mobile: {t.phone} ({t.rating}★)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Modal Footer Actions */}
@@ -1178,6 +1586,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <Phone className="w-3.5 h-3.5" />
                   <span>Call Customer</span>
                 </a>
+                {(() => {
+                  const assigned = getAssignedTechnician(selectedBookingForModal);
+                  if (assigned.phone) {
+                    return (
+                      <a
+                        href={`tel:${assigned.phone}`}
+                        className="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs px-3 py-2 rounded-xl border border-emerald-200 flex items-center gap-1.5 transition"
+                        title={`Call Technician: ${assigned.name} (${assigned.phone})`}
+                      >
+                        <Phone className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Call Tech ({assigned.name})</span>
+                      </a>
+                    );
+                  }
+                  return null;
+                })()}
                 <a
                   href={`https://wa.me/91${selectedBookingForModal.customerPhone.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(
                     selectedBookingForModal.customerName
@@ -1199,7 +1623,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onClick={() => {
                       handleConfirmSingleBooking(selectedBookingForModal.id);
                       setSelectedBookingForModal((prev) =>
-                        prev ? { ...prev, status: 'booking_confirmed', technicianName: 'Piyush' } : null
+                        prev
+                          ? {
+                              ...prev,
+                              status: 'booking_confirmed',
+                              technicianName: 'Piyush',
+                              technicianPhone: '+91 85639 75583',
+                            }
+                          : null
                       );
                     }}
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer"

@@ -5,6 +5,7 @@ import {
   PaymentMethod,
   PaymentStatus,
 } from '../types';
+import { CancelBookingModal } from './CancelBookingModal';
 import {
   CheckCircle2,
   Clock,
@@ -22,15 +23,17 @@ import {
   Star,
   Navigation,
   Smartphone,
+  XCircle,
 } from 'lucide-react';
 
 interface BookingTrackerProps {
   booking: Booking;
-  onUpdateStatus?: (status: BookingStatus) => void;
+  onUpdateStatus?: (status: BookingStatus, cancelReason?: string) => void;
   onApproveQuotation?: (approved: boolean) => void;
   onPaymentComplete?: (method: PaymentMethod) => void;
   onOpenInvoice?: () => void;
   onOpenNewBooking?: () => void;
+  onCancelBooking?: (booking: Booking) => void;
 }
 
 const TIMELINE_STEPS: { key: BookingStatus; label: string; desc: string }[] = [
@@ -54,14 +57,42 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
   onPaymentComplete,
   onOpenInvoice,
   onOpenNewBooking,
+  onCancelBooking,
 }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
   const [selectedPayMode, setSelectedPayMode] = useState<PaymentMethod>('upi');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+  // Check if booking is in a cancellable state (not yet completed, paid, or closed)
+  const isCancellable =
+    booking.status !== 'cancelled' &&
+    booking.status !== 'repair_completed' &&
+    booking.status !== 'payment_completed' &&
+    booking.status !== 'booking_closed';
+
   // Determine current step index
   const currentIndex = TIMELINE_STEPS.findIndex((s) => s.key === booking.status);
-  const activeStepIdx = currentIndex === -1 ? 3 : currentIndex;
+  const activeStepIdx = currentIndex === -1 ? 0 : currentIndex;
+
+  // Check if technician is assigned
+  const isTechnicianAssigned =
+    Boolean(booking.technicianName) ||
+    Boolean(booking.technicianId) ||
+    [
+      'technician_assigned',
+      'technician_on_the_way',
+      'technician_arrived',
+      'device_inspection',
+      'repair_started',
+      'repair_completed',
+      'payment_completed',
+      'booking_closed',
+    ].includes(booking.status);
+
+  const assignedTechName = booking.technicianName || 'Piyush';
+  const assignedTechPhone = booking.technicianPhone || '+91 85639 75583';
+  const cleanTechPhone = assignedTechPhone.replace(/[^0-9]/g, '');
 
   const handlePayNow = () => {
     setIsProcessingPayment(true);
@@ -72,6 +103,14 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
         onPaymentComplete(selectedPayMode);
       }
     }, 1500);
+  };
+
+  const handleConfirmCancel = async (bookingId: string, reason: string) => {
+    if (onCancelBooking) {
+      onCancelBooking(booking);
+    } else if (onUpdateStatus) {
+      await onUpdateStatus('cancelled', reason);
+    }
   };
 
   return (
@@ -91,6 +130,29 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
           <p className="text-xs sm:text-sm text-blue-100 mt-1">
             {booking.brand} {booking.model} • {booking.problems.join(', ')}
           </p>
+
+          {/* Assigned Technician Badge in Top Banner */}
+          {isTechnicianAssigned && booking.status !== 'cancelled' ? (
+            <div className="mt-3 inline-flex flex-wrap items-center gap-2 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-xs text-white border border-white/20">
+              <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+              <span className="font-semibold text-blue-100">Assigned Technician:</span>
+              <span className="font-extrabold text-white text-sm">{assignedTechName}</span>
+              <span className="text-blue-300">•</span>
+              <Phone className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+              <span className="text-blue-100 font-sans">Mobile:</span>
+              <a
+                href={`tel:${assignedTechPhone.replace(/\s+/g, '')}`}
+                className="font-mono font-bold text-white hover:text-emerald-200 underline"
+              >
+                {assignedTechPhone}
+              </a>
+            </div>
+          ) : booking.status !== 'cancelled' ? (
+            <div className="mt-3 inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-xl text-xs text-blue-100 border border-white/15">
+              <Clock className="w-3.5 h-3.5 text-amber-300 animate-spin shrink-0" />
+              <span>Sitapur Hub is assigning your doorstep technician...</span>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -105,15 +167,13 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
             </button>
           )}
 
-          {booking.status !== 'cancelled' && (booking.status === 'booking_received' || booking.status === 'booking_confirmed') && onUpdateStatus && (
+          {isCancellable && (onUpdateStatus || onCancelBooking) && (
             <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to cancel this booking?')) {
-                  onUpdateStatus('cancelled');
-                }
-              }}
-              className="bg-red-500/20 hover:bg-red-500/40 text-white text-xs font-semibold px-4 py-2.5 rounded-xl border border-red-400/30 transition flex items-center gap-1.5 cursor-pointer"
+              id="tracker-cancel-booking-btn"
+              onClick={() => setShowCancelModal(true)}
+              className="bg-rose-500/20 hover:bg-rose-500/40 text-rose-100 hover:text-white text-xs font-semibold px-4 py-2.5 rounded-xl border border-rose-400/30 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
+              <AlertCircle className="w-4 h-4 text-rose-300" />
               <span>Cancel Booking</span>
             </button>
           )}
@@ -135,17 +195,50 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
         {/* Left Column: Timeline & Quotation */}
         <div className="lg:col-span-7 space-y-6">
           {booking.status === 'cancelled' && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm mb-6">
-              <div className="flex">
+            <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-2xl shadow-sm mb-6 space-y-3">
+              <div className="flex items-start">
                 <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-red-500" aria-hidden="true" />
+                  <AlertCircle className="h-6 w-6 text-rose-600" aria-hidden="true" />
                 </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-bold text-red-800">Booking Cancelled</h3>
-                  <div className="mt-1 text-xs text-red-700">
-                    <p>This booking has been cancelled and will not be processed further.</p>
+                <div className="ml-3 flex-1">
+                  <h3 className="text-sm font-bold text-rose-900">Booking Cancelled</h3>
+                  <div className="mt-1 text-xs text-rose-700 space-y-1">
+                    <p>This repair booking has been cancelled and will not be processed further.</p>
+                    {booking.cancelReason && (
+                      <p className="bg-rose-100/70 p-2.5 rounded-xl text-rose-900 font-medium">
+                        <strong>Reason:</strong> {booking.cancelReason}
+                      </p>
+                    )}
+                    {booking.cancelledAt && (
+                      <p className="text-[11px] text-rose-500">
+                        Cancelled on:{' '}
+                        {new Date(booking.cancelledAt).toLocaleString('en-IN', {
+                          dateStyle: 'medium',
+                          timeStyle: 'short',
+                        })}
+                      </p>
+                    )}
                   </div>
                 </div>
+              </div>
+
+              <div className="pt-2 flex flex-wrap gap-2.5 border-t border-rose-200/60">
+                {onOpenNewBooking && (
+                  <button
+                    onClick={onOpenNewBooking}
+                    className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Book a New Repair</span>
+                  </button>
+                )}
+                <a
+                  href="tel:+918563975583"
+                  className="bg-white hover:bg-rose-50 text-rose-700 border border-rose-300 text-xs font-semibold px-3 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Sitapur Helpline</span>
+                </a>
               </div>
             </div>
           )}
@@ -351,65 +444,141 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
 
         {/* Right Column: Technician Info & Sitapur Map */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Technician Info Card */}
-          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs">
-            <h2 className="font-extrabold text-sm text-slate-900 mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Assigned Sitapur Technician</span>
-            </h2>
+          {/* Technician Info Card - Shown after technician assigning */}
+          {isTechnicianAssigned && booking.status !== 'cancelled' ? (
+            <div className="bg-white rounded-3xl p-5 border-2 border-blue-200 shadow-md">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                <h2 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>Assigned Sitapur Technician</span>
+                </h2>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  ✓ Verified Specialist
+                </span>
+              </div>
 
-            <div className="flex items-center gap-4">
-              <img
-                src={
-                  booking.technicianPhoto ||
-                  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
-                }
-                alt={booking.technicianName || 'Technician'}
-                className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-500/30 shadow-xs"
-              />
-              <div>
-                <h3 className="font-bold text-base text-slate-900">
-                  {booking.technicianName || 'Ramesh Kumar Sharma'}
-                </h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div className="flex items-center text-amber-400">
-                    <Star className="w-3.5 h-3.5 fill-amber-400" />
-                    <span className="text-xs font-bold text-slate-800 ml-1">
-                      {booking.technicianRating || 4.9}
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-slate-400">• 6+ Yrs Exp</span>
+              <div className="flex items-center gap-4">
+                <div className="relative shrink-0">
+                  <img
+                    src={
+                      booking.technicianPhoto ||
+                      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+                    }
+                    alt={assignedTechName}
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-blue-500/40 shadow-xs"
+                  />
+                  <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full"></span>
                 </div>
-                <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-                  ✓ Verified Sitapur Doorstep Specialist
+                <div>
+                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Doorstep Specialist
+                  </div>
+                  <h3 className="font-black text-lg text-slate-900 leading-tight">
+                    {assignedTechName}
+                  </h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="flex items-center text-amber-400">
+                      <Star className="w-3.5 h-3.5 fill-amber-400" />
+                      <span className="text-xs font-bold text-slate-800 ml-1">
+                        {booking.technicianRating || 4.9}
+                      </span>
+                    </div>
+                    <span className="text-[11px] text-slate-400">• 8+ Yrs Exp</span>
+                    <span className="text-[11px] text-emerald-600 font-semibold">• Active</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dedicated Highlighted Mobile Number Box */}
+              <div className="mt-4 p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50/70 rounded-2xl border border-blue-200 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">
+                      Technician Mobile Number
+                    </span>
+                    <a
+                      href={`tel:${assignedTechPhone.replace(/\s+/g, '')}`}
+                      className="text-base sm:text-lg font-mono font-black text-slate-900 hover:text-blue-700 transition tracking-wide"
+                    >
+                      {assignedTechPhone}
+                    </a>
+                  </div>
+                </div>
+
+                <a
+                  href={`tel:${assignedTechPhone.replace(/\s+/g, '')}`}
+                  className="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Now</span>
+                </a>
+              </div>
+
+              {/* Direct Call & WhatsApp Buttons */}
+              <div className="mt-3 grid grid-cols-2 gap-2.5">
+                <a
+                  id="call-assigned-technician-btn"
+                  href={`tel:${assignedTechPhone.replace(/\s+/g, '')}`}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Call Technician</span>
+                </a>
+                <a
+                  id="whatsapp-assigned-technician-btn"
+                  href={`https://wa.me/${cleanTechPhone}?text=Hi%20${encodeURIComponent(
+                    assignedTechName
+                  )},%20I%20am%20tracking%20my%20repair%20booking%20${booking.bookingId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition cursor-pointer"
+                >
+                  <MessageSquare className="w-3.5 h-3.5 fill-white" />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+
+              <p className="text-[11px] text-slate-500 mt-3 text-center">
+                Technician will call on <strong className="text-slate-700 font-mono">{booking.customerPhone}</strong> before arriving at your doorstep in {booking.area}.
+              </p>
+            </div>
+          ) : booking.status !== 'cancelled' ? (
+            /* Technician Assignment in Progress Card */
+            <div className="bg-white rounded-3xl p-5 border border-amber-200/90 shadow-xs bg-amber-50/20">
+              <div className="flex items-center justify-between mb-3 pb-3 border-b border-amber-100">
+                <h2 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-amber-600 animate-spin" />
+                  <span>Technician Assignment in Progress</span>
+                </h2>
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
+                  Sitapur Hub Dispatching
+                </span>
+              </div>
+
+              <div className="p-3 bg-amber-50/80 rounded-2xl border border-amber-200/60 text-xs text-amber-900 space-y-1.5">
+                <p className="font-bold">
+                  Sitapur Hub is currently assigning a certified hardware technician for your area ({booking.area}).
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  Technician <strong>Name</strong> and direct <strong>Mobile Number</strong> will be displayed here immediately once assigned.
                 </p>
               </div>
-            </div>
 
-            {/* Direct Call & WhatsApp Buttons */}
-            <div className="mt-5 grid grid-cols-2 gap-2.5">
-              <a
-                id="call-assigned-technician-btn"
-                href={`tel:${booking.technicianPhone || '+918563975583'}`}
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Call Technician</span>
-              </a>
-              <a
-                id="whatsapp-assigned-technician-btn"
-                href={`https://wa.me/918563975583?text=Hi%20${encodeURIComponent(
-                  booking.technicianName || 'Piyush'
-                )},%20I%20am%20tracking%20my%20repair%20booking%20${booking.bookingId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2.5 px-3 rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition"
-              >
-                <MessageSquare className="w-3.5 h-3.5 fill-white" />
-                <span>WhatsApp</span>
-              </a>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-500">Need emergency dispatch assistance?</span>
+                <a
+                  href="tel:+918563975583"
+                  className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1"
+                >
+                  <Phone className="w-3 h-3" />
+                  <span>Call Hub Desk</span>
+                </a>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           {/* Interactive Sitapur Map Representation */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-xs overflow-hidden">
@@ -454,7 +623,7 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
               {/* Technician Moving Pin */}
               <div className="absolute top-24 left-24 flex flex-col items-center animate-bounce">
                 <div className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md whitespace-nowrap">
-                  🛵 Technician En Route
+                  {isTechnicianAssigned ? `🛵 ${assignedTechName} En Route` : '🛵 Locating Nearest Specialist'}
                 </div>
                 <div className="w-3 h-3 bg-blue-600 rotate-45 -mt-1.5"></div>
               </div>
@@ -590,6 +759,14 @@ export const BookingTracker: React.FC<BookingTrackerProps> = ({
           </div>
         </div>
       )}
+
+      {/* In-App Interactive Cancel Booking Modal */}
+      <CancelBookingModal
+        isOpen={showCancelModal}
+        onClose={() => setShowCancelModal(false)}
+        booking={booking}
+        onConfirmCancel={handleConfirmCancel}
+      />
     </div>
   );
 };

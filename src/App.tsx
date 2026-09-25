@@ -17,6 +17,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { DigitalInvoiceModal } from './components/DigitalInvoiceModal';
 import { SupportModal } from './components/SupportModal';
 import { SeoPagesModal } from './components/SeoPagesModal';
+import { CancelBookingModal } from './components/CancelBookingModal';
 import { auth, signInWithGoogle, loginAnonymously, db, handleFirestoreError, OperationType } from './lib/firebase';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { collection, onSnapshot, doc, setDoc, updateDoc, query, where } from 'firebase/firestore';
@@ -48,6 +49,13 @@ import {
   Search,
   ExternalLink,
   ChevronRight,
+  AlertCircle,
+  CheckCircle2,
+  XCircle,
+  Calendar,
+  Smartphone,
+  X,
+  Plus,
 } from 'lucide-react';
 
 export default function App() {
@@ -103,6 +111,8 @@ export default function App() {
   const [isSupportModalOpen, setIsSupportModalOpen] = useState<boolean>(false);
   const [isSeoModalOpen, setIsSeoModalOpen] = useState<boolean>(false);
   const [invoiceBooking, setInvoiceBooking] = useState<Booking | null>(null);
+  const [bookingToCancel, setBookingToCancel] = useState<Booking | null>(null);
+  const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
 
   // Track search query
   const [trackSearchInput, setTrackSearchInput] = useState<string>('');
@@ -234,14 +244,48 @@ export default function App() {
   };
 
   // Update Status of a Booking
-  const handleUpdateBookingStatus = async (bookingId: string, newStatus: BookingStatus) => {
+  const handleUpdateBookingStatus = async (
+    bookingId: string,
+    newStatus: BookingStatus,
+    cancelReason?: string
+  ) => {
     if (!bookingId) return;
     try {
-      await updateDoc(doc(db, 'bookings', bookingId), {
+      const updateData: any = {
         status: newStatus,
-      });
+        updatedAt: new Date().toISOString(),
+      };
+      if (newStatus === 'cancelled') {
+        updateData.cancelledAt = new Date().toISOString();
+        if (cancelReason) {
+          updateData.cancelReason = cancelReason;
+        }
+      } else if (
+        newStatus === 'technician_assigned' ||
+        newStatus === 'technician_on_the_way' ||
+        newStatus === 'technician_arrived' ||
+        newStatus === 'device_inspection' ||
+        newStatus === 'repair_started'
+      ) {
+        const currentBooking = bookings.find((b) => b.id === bookingId);
+        if (!currentBooking?.technicianName) {
+          const defaultTech = technicians[0] || {
+            id: 'tech_1',
+            name: 'Piyush',
+            phone: '+91 85639 75583',
+            rating: 4.9,
+            photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          };
+          updateData.technicianId = defaultTech.id;
+          updateData.technicianName = defaultTech.name;
+          updateData.technicianPhone = defaultTech.phone;
+          updateData.technicianRating = defaultTech.rating || 4.9;
+          if (defaultTech.photo) updateData.technicianPhoto = defaultTech.photo;
+        }
+      }
+      await updateDoc(doc(db, 'bookings', bookingId), updateData);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to update booking status in Firestore', err);
     }
   };
 
@@ -305,15 +349,16 @@ export default function App() {
   // Admin Assigns Technician
   const handleAssignTechnician = async (bookingId: string, technicianId: string) => {
     if (!bookingId) return;
-    const tech = technicians.find((t) => t.id === technicianId);
+    const tech = technicians.find((t) => t.id === technicianId) || technicians[0];
     try {
       await updateDoc(doc(db, 'bookings', bookingId), {
-        technicianId,
-        technicianName: tech ? tech.name : 'Assigned Technician',
-        technicianPhone: tech ? tech.phone : '+91 94520 88219',
-        technicianPhoto: tech ? tech.photo : null,
-        technicianRating: tech ? tech.rating : 4.8,
+        technicianId: tech ? tech.id : 'tech_1',
+        technicianName: tech ? tech.name : 'Piyush',
+        technicianPhone: tech ? tech.phone : '+91 85639 75583',
+        technicianPhoto: tech ? tech.photo : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        technicianRating: tech ? tech.rating : 4.9,
         status: 'technician_assigned',
+        updatedAt: new Date().toISOString(),
       });
     } catch (err) {
       console.error(err);
@@ -497,34 +542,342 @@ export default function App() {
           </div>
         )}
 
-        {/* TRACK ORDER VIEW */}
+        {/* TRACK ORDER & CUSTOMER DASHBOARD VIEW */}
         {activeTab === 'track' && (
           <div className="space-y-6">
             <div className="max-w-5xl mx-auto px-4 pt-6 space-y-6">
+              {/* Notification Banner when cancelled */}
+              {cancelSuccessMsg && (
+                <div className="bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-2xl flex items-center justify-between shadow-xs animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span className="text-xs sm:text-sm font-semibold">{cancelSuccessMsg}</span>
+                  </div>
+                  <button
+                    onClick={() => setCancelSuccessMsg(null)}
+                    className="p-1 text-emerald-700 hover:text-emerald-900 rounded-lg hover:bg-emerald-100 transition cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {/* Customer Dashboard Hero Card */}
+              <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-800 border border-blue-200">
+                      Customer Dashboard
+                    </span>
+                    <span className="text-xs text-slate-400">Sitapur Hub</span>
+                  </div>
+                  <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">
+                    {currentUser
+                      ? `Welcome, ${currentUser.displayName || currentUser.email?.split('@')[0] || 'Customer'}`
+                      : 'Track Your Repair Order'}
+                  </h1>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Manage your doorstep repair bookings, track live technician visits, or cancel bookings anytime.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleOpenBooking()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Book New Repair</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Logged in User Bookings Section */}
               {currentUser && userBookings.length > 0 && (
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                  <div className="bg-slate-50 px-4 py-3 border-b border-slate-200">
-                    <h3 className="font-bold text-slate-800 text-sm">Your Recent Bookings</h3>
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="px-6 py-4 bg-slate-50/70 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <h2 className="font-bold text-slate-900 text-sm sm:text-base">
+                        Your Doorstep Bookings ({userBookings.length})
+                      </h2>
+                      <p className="text-[11px] text-slate-500">
+                        View live status or cancel any pending booking with zero fees.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 rounded-full font-semibold border border-blue-200">
+                        {userBookings.filter(
+                          (b) =>
+                            b.status !== 'cancelled' &&
+                            b.status !== 'repair_completed' &&
+                            b.status !== 'payment_completed' &&
+                            b.status !== 'booking_closed'
+                        ).length}{' '}
+                        Active
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-emerald-50 text-emerald-700 rounded-full font-semibold border border-emerald-200">
+                        {userBookings.filter(
+                          (b) =>
+                            b.status === 'repair_completed' ||
+                            b.status === 'payment_completed' ||
+                            b.status === 'booking_closed'
+                        ).length}{' '}
+                        Completed
+                      </span>
+                      <span className="px-2.5 py-0.5 bg-rose-50 text-rose-700 rounded-full font-semibold border border-rose-200">
+                        {userBookings.filter((b) => b.status === 'cancelled').length} Cancelled
+                      </span>
+                    </div>
                   </div>
+
                   <div className="divide-y divide-slate-100">
-                    {userBookings.map((b) => (
-                      <button
-                        key={b.id}
-                        onClick={() => handleSelectUserBooking(b.id)}
-                        className={`w-full text-left px-4 py-3 flex items-center justify-between hover:bg-slate-50 transition cursor-pointer ${
-                          currentTrackBooking?.id === b.id ? 'bg-blue-50/50' : ''
-                        }`}
-                      >
-                        <div>
-                          <div className="font-semibold text-sm text-slate-800">
-                            {b.bookingId} <span className="text-slate-400 font-normal ml-1">({b.brand} {b.model})</span>
+                    {userBookings.map((b) => {
+                      const isSelected = currentTrackBooking?.id === b.id;
+                      const isCancellable =
+                        b.status !== 'cancelled' &&
+                        b.status !== 'repair_completed' &&
+                        b.status !== 'payment_completed' &&
+                        b.status !== 'booking_closed';
+
+                      const isTechAssigned =
+                        Boolean(b.technicianName) ||
+                        Boolean(b.technicianId) ||
+                        [
+                          'technician_assigned',
+                          'technician_on_the_way',
+                          'technician_arrived',
+                          'device_inspection',
+                          'repair_started',
+                          'repair_completed',
+                          'payment_completed',
+                          'booking_closed',
+                        ].includes(b.status);
+
+                      const techName = b.technicianName || 'Piyush';
+                      const techPhone = b.technicianPhone || '+91 85639 75583';
+                      const cleanPhone = techPhone.replace(/[^0-9]/g, '');
+
+                      return (
+                        <div
+                          key={b.id}
+                          className={`p-4 sm:p-5 transition hover:bg-slate-50/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                            isSelected ? 'bg-blue-50/50 border-l-4 border-blue-600' : ''
+                          }`}
+                        >
+                          <div
+                            className="space-y-1.5 flex-1 cursor-pointer"
+                            onClick={() => handleSelectUserBooking(b.id)}
+                          >
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono font-bold text-sm text-blue-700">
+                                {b.bookingId}
+                              </span>
+                              <span
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                                  b.status === 'cancelled'
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                                    : b.status === 'repair_completed' ||
+                                      b.status === 'payment_completed' ||
+                                      b.status === 'booking_closed'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                                    : 'bg-blue-100 text-blue-800 border border-blue-200'
+                                }`}
+                              >
+                                {b.status.replace(/_/g, ' ')}
+                              </span>
+                              {isSelected && (
+                                <span className="text-[10px] bg-blue-600 text-white font-bold px-2 py-0.5 rounded-full">
+                                  Viewing Live Below
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-xs sm:text-sm font-semibold text-slate-800">
+                              {b.brand} {b.model} •{' '}
+                              <span className="text-slate-600 font-normal">
+                                {b.problems?.join(', ') || 'Doorstep Diagnostic'}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                {b.appointmentDate} ({b.appointmentSlot})
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                {b.area || 'Sitapur'}
+                              </span>
+                              <span className="font-semibold text-emerald-700">
+                                ₹{b.finalPrice || b.estimatedPrice}
+                              </span>
+                            </div>
+
+                            {/* Assigned Technician Contact Box after technician assigning */}
+                            {isTechAssigned ? (
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                className="mt-2.5 p-3 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-blue-50/50 rounded-2xl border border-blue-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="relative shrink-0">
+                                    <img
+                                      src={
+                                        b.technicianPhoto ||
+                                        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+                                      }
+                                      alt={techName}
+                                      className="w-10 h-10 rounded-xl object-cover border-2 border-blue-400/40 shadow-xs"
+                                    />
+                                    <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-[10px] font-extrabold uppercase tracking-wider bg-blue-600 text-white px-2 py-0.5 rounded-full">
+                                        Doorstep Technician Assigned
+                                      </span>
+                                      <span className="text-[11px] font-bold text-amber-600">
+                                        ★ {b.technicianRating || 4.9}
+                                      </span>
+                                    </div>
+                                    <div className="text-sm font-extrabold text-slate-900 mt-0.5 flex items-center gap-1.5">
+                                      <span>Technician:</span>
+                                      <span className="text-blue-900 font-black">{techName}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-700 font-mono mt-0.5">
+                                      <Phone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                                      <span className="text-slate-500 font-sans">Mobile:</span>
+                                      <a
+                                        href={`tel:${techPhone.replace(/\s+/g, '')}`}
+                                        className="font-extrabold text-slate-900 hover:text-blue-700 hover:underline"
+                                      >
+                                        {techPhone}
+                                      </a>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                                  <a
+                                    href={`tel:${techPhone.replace(/\s+/g, '')}`}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs transition cursor-pointer"
+                                    title={`Call ${techName}`}
+                                  >
+                                    <Phone className="w-3.5 h-3.5" />
+                                    <span>Call Technician</span>
+                                  </a>
+                                  <a
+                                    href={`https://wa.me/${cleanPhone}?text=Hi%20${encodeURIComponent(
+                                      techName
+                                    )},%20I%20am%20tracking%20my%20repair%20booking%20${b.bookingId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-xs transition cursor-pointer"
+                                    title="WhatsApp technician"
+                                  >
+                                    <MessageSquare className="w-3.5 h-3.5" />
+                                    <span>WhatsApp</span>
+                                  </a>
+                                </div>
+                              </div>
+                            ) : (
+                              b.status !== 'cancelled' && (
+                                <div className="mt-2 flex items-center gap-2 text-xs text-amber-800 bg-amber-50/90 px-3 py-1.5 rounded-xl border border-amber-200/80 w-fit">
+                                  <Clock className="w-3.5 h-3.5 text-amber-600 animate-spin shrink-0" />
+                                  <span className="font-medium">Sitapur Hub is currently assigning your doorstep technician...</span>
+                                </div>
+                              )
+                            )}
+
+                            {b.status === 'cancelled' && b.cancelReason && (
+                              <div className="text-[11px] text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-100 inline-block mt-1">
+                                <strong>Reason for cancellation:</strong> {b.cancelReason}
+                              </div>
+                            )}
                           </div>
-                          <div className="text-xs text-slate-500 mt-0.5">{b.appointmentDate} • {b.status.replace(/_/g, ' ')}</div>
+
+                          {/* Action Buttons for Each Booking Card */}
+                          <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleSelectUserBooking(b.id)}
+                              className={`px-3 py-2 text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-blue-600 text-white shadow-xs'
+                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                              }`}
+                            >
+                              <span>Track Status</span>
+                              <ChevronRight className="w-3.5 h-3.5" />
+                            </button>
+
+                            {isCancellable && (
+                              <button
+                                type="button"
+                                id={`cancel-booking-btn-${b.bookingId}`}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setBookingToCancel(b);
+                                }}
+                                className="px-3 py-2 text-xs font-bold rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                title="Cancel this repair booking"
+                              >
+                                <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Cancel Booking</span>
+                              </button>
+                            )}
+
+                            {b.status === 'cancelled' && (
+                              <button
+                                type="button"
+                                onClick={() => handleOpenBooking(b.brand, b.model)}
+                                className="px-3 py-2 text-xs font-semibold rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 transition flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>Book Again</span>
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <ChevronRight className="w-4 h-4 text-slate-400" />
-                      </button>
-                    ))}
+                      );
+                    })}
                   </div>
+                </div>
+              )}
+
+              {currentUser && userBookings.length === 0 && (
+                <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center space-y-3">
+                  <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto">
+                    <Smartphone className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-800">No Repair Bookings Found</h3>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    You don't have any bookings registered under your account yet. Need your smartphone or laptop fixed at your doorstep in Sitapur?
+                  </p>
+                  <button
+                    onClick={() => handleOpenBooking()}
+                    className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition cursor-pointer"
+                  >
+                    <Wrench className="w-4 h-4" />
+                    <span>Book Doorstep Repair</span>
+                  </button>
+                </div>
+              )}
+
+              {!currentUser && (
+                <div className="bg-blue-50/70 border border-blue-200 rounded-3xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="space-y-1 text-center sm:text-left">
+                    <h3 className="text-sm font-bold text-blue-900">Sign in to view your Customer Dashboard</h3>
+                    <p className="text-xs text-blue-700">
+                      Sign in to see all your bookings, active status, digital invoices, and cancel bookings anytime.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => signInWithGoogle()}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xs transition shrink-0 cursor-pointer"
+                  >
+                    Sign In with Google
+                  </button>
                 </div>
               )}
 
@@ -537,7 +890,7 @@ export default function App() {
                   <Search className="w-4 h-4 text-slate-400" />
                   <input
                     type="text"
-                    placeholder="Enter Booking ID (e.g. SMC-2026-000123) or Mobile Number..."
+                    placeholder="Track by Booking ID (e.g. SMC-2026-000123) or Mobile Number..."
                     value={trackSearchInput}
                     onChange={(e) => setTrackSearchInput(e.target.value)}
                     className="w-full text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
@@ -552,7 +905,7 @@ export default function App() {
               </form>
 
               {trackNotFound && (
-                <p className="text-xs text-red-600 font-semibold mt-2 pl-2">
+                <p className="text-xs text-red-600 font-semibold pl-2">
                   No booking found with that ID or Phone. Showing most recent active booking below:
                 </p>
               )}
@@ -561,13 +914,14 @@ export default function App() {
             {currentTrackBooking && (
               <BookingTracker
                 booking={currentTrackBooking}
-                onUpdateStatus={(newStatus) =>
-                  handleUpdateBookingStatus(currentTrackBooking.id, newStatus)
+                onUpdateStatus={(newStatus, cancelReason) =>
+                  handleUpdateBookingStatus(currentTrackBooking.id, newStatus, cancelReason)
                 }
                 onApproveQuotation={handleApproveQuotation}
                 onPaymentComplete={handlePaymentComplete}
                 onOpenInvoice={() => setInvoiceBooking(currentTrackBooking)}
                 onOpenNewBooking={() => handleOpenBooking()}
+                onCancelBooking={(b) => setBookingToCancel(b)}
               />
             )}
           </div>
@@ -767,6 +1121,20 @@ export default function App() {
         isOpen={isSeoModalOpen}
         onClose={() => setIsSeoModalOpen(false)}
         onBookNow={handleOpenBooking}
+      />
+
+      {/* MODAL 5: Customer Cancel Booking In-App Modal */}
+      <CancelBookingModal
+        isOpen={Boolean(bookingToCancel)}
+        onClose={() => setBookingToCancel(null)}
+        booking={bookingToCancel}
+        onConfirmCancel={async (bookingId, reason) => {
+          await handleUpdateBookingStatus(bookingId, 'cancelled', reason);
+          setCancelSuccessMsg(
+            `Booking ${bookingToCancel?.bookingId || ''} has been successfully cancelled.`
+          );
+          setBookingToCancel(null);
+        }}
       />
     </div>
   );
